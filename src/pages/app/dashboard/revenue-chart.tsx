@@ -26,9 +26,9 @@ const chartData = [
 ]
 
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
-    color: colors.violet[500],
+  revenue: {
+    label: 'Receita',
+    color: colors.red[500],
   },
 } satisfies ChartConfig
 
@@ -80,7 +80,7 @@ export function RevenueChart() {
             <Line
               dataKey="revenue"
               type="natural"
-              stroke="var(--color-desktop)"
+              stroke="var(--color-revenue)"
               strokeWidth={2}
               dot={false}
             />
