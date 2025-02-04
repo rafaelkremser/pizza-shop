@@ -1,6 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
+import { subDays } from 'date-fns'
+import { useMemo, useState } from 'react'
+import { DateRange } from 'react-day-picker'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import colors from 'tailwindcss/colors'
 
+import { getDailyRevenueInPeriod } from '@/api/get-daily-revenue-in-period'
 import {
   Card,
   CardContent,
@@ -14,78 +19,100 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart'
-
-const chartData = [
-  { date: '10/11', revenue: 1200 },
-  { date: '11/11', revenue: 169 },
-  { date: '12/11', revenue: 1020 },
-  { date: '13/11', revenue: 560 },
-  { date: '14/11', revenue: 1970 },
-  { date: '15/11', revenue: 840 },
-  { date: '16/11', revenue: 670 },
-]
+import { DateRangePicker } from '@/components/ui/date-range-picker'
+import { Label } from '@/components/ui/label'
 
 const chartConfig = {
-  revenue: {
+  receipt: {
     label: 'Receita',
     color: colors.red[500],
   },
 } satisfies ChartConfig
 
 export function RevenueChart() {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 7),
+    to: new Date(),
+  })
+
+  const { data: dailyRevenueInPeriod } = useQuery({
+    queryFn: () =>
+      getDailyRevenueInPeriod({
+        from: dateRange?.from,
+        to: dateRange?.to,
+      }),
+    queryKey: ['metrics', 'dailyRevenueInPeriod', dateRange],
+  })
+
+  const chatData = useMemo(() => {
+    return dailyRevenueInPeriod?.map((chartItem) => {
+      return {
+        date: chartItem.date,
+        receipt: chartItem.receipt / 100,
+      }
+    })
+  }, [dailyRevenueInPeriod])
+
   return (
     <Card className="col-span-6">
       <CardHeader className="flex-row items-center justify-between pb-8">
-        <div className="space-y-1">
-          <CardTitle className="text-base font-medium">
+        <div className="w-full space-y-1">
+          <CardTitle className="flex text-base font-medium">
             Receita no período
           </CardTitle>
           <CardDescription>Receita diário no período</CardDescription>
         </div>
+
+        <div className="flex items-center gap-3">
+          <Label>Período:</Label>
+          <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+        </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="max-h-[240px] w-full">
-          <LineChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
+        {chatData && (
+          <ChartContainer config={chartConfig} className="max-h-[240px] w-full">
+            <LineChart
+              accessibilityLayer
+              data={chatData}
+              margin={{
+                left: 12,
+                right: 12,
+              }}
+            >
+              <CartesianGrid vertical={false} />
 
-            <YAxis
-              stroke="#888"
-              axisLine={false}
-              tickLine={false}
-              width={80}
-              tickFormatter={(value: number) =>
-                value.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })
-              }
-            />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Line
-              dataKey="revenue"
-              type="natural"
-              stroke="var(--color-revenue)"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
-        </ChartContainer>
+              <YAxis
+                stroke="#888"
+                axisLine={false}
+                tickLine={false}
+                width={80}
+                tickFormatter={(value: number) =>
+                  value.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })
+                }
+              />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Line
+                dataKey="receipt"
+                type="natural"
+                stroke="var(--color-receipt)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   )
