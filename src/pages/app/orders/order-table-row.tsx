@@ -16,13 +16,13 @@ import { TableCell, TableRow } from '@/components/ui/table'
 import { OrderDetails } from './order-details'
 import { OrderStatus } from './order-status'
 
-export interface OrderTableRowProps {
+interface OrderTableRowProps {
   order: {
     orderId: string
+    createdAt: string
     status: 'pending' | 'canceled' | 'processing' | 'delivering' | 'delivered'
     customerName: string
     total: number
-    createdAt: string
   }
 }
 
@@ -91,12 +91,12 @@ export function OrderTableRow({ order }: OrderTableRowProps) {
         <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="xs">
-              <Search className="size-3" />
+              <Search className="h-3 w-3" />
               <span className="sr-only">Detalhes do pedido</span>
             </Button>
           </DialogTrigger>
 
-          <OrderDetails orderId={order.orderId} open={isDetailsOpen} />
+          <OrderDetails open={isDetailsOpen} orderId={order.orderId} />
         </Dialog>
       </TableCell>
       <TableCell className="font-mono text-xs font-medium">
@@ -121,36 +121,36 @@ export function OrderTableRow({ order }: OrderTableRowProps) {
       <TableCell>
         {order.status === 'pending' && (
           <Button
-            onClick={() => approveOrderFn({ orderId: order.orderId })}
-            disabled={isApprovingOrder}
             variant="outline"
+            disabled={isApprovingOrder}
             size="xs"
+            onClick={() => approveOrderFn({ orderId: order.orderId })}
           >
-            <ArrowRight className="size-3" />
+            <ArrowRight className="mr-2 h-3 w-3" />
             Aprovar
           </Button>
         )}
 
         {order.status === 'processing' && (
           <Button
-            onClick={() => dispatchOrderFn({ orderId: order.orderId })}
-            disabled={isDispatchingOrder}
             variant="outline"
+            disabled={isDispatchingOrder}
             size="xs"
+            onClick={() => dispatchOrderFn({ orderId: order.orderId })}
           >
-            <ArrowRight className="size-3" />
+            <ArrowRight className="mr-2 h-3 w-3" />
             Em entrega
           </Button>
         )}
 
         {order.status === 'delivering' && (
           <Button
-            onClick={() => deliverOrderFn({ orderId: order.orderId })}
-            disabled={isDeliveringOrder}
             variant="outline"
+            disabled={isDeliveringOrder}
             size="xs"
+            onClick={() => deliverOrderFn({ orderId: order.orderId })}
           >
-            <ArrowRight className="size-3" />
+            <ArrowRight className="mr-2 h-3 w-3" />
             Entregue
           </Button>
         )}
@@ -165,7 +165,7 @@ export function OrderTableRow({ order }: OrderTableRowProps) {
           variant="ghost"
           size="xs"
         >
-          <X className="size-3" />
+          <X className="mr-2 h-3 w-3" />
           Cancelar
         </Button>
       </TableCell>
